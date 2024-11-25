@@ -1,16 +1,20 @@
 import React from "react"
 import { Line } from "react-chartjs-2"
 import "chart.js/auto"
-import { calcTrend } from "../utils/CalcTrend"
+import { calcTrend } from "../utils/calcTrend"
 import { Col, Container, Row } from "react-bootstrap"
 import { convertMinutesAgo } from "../utils/convertMinutesAgo"
 
 const TrendChart = ({ data = [] }) => {
+  console.log(data)
   const trends = calcTrend(data)
   const humidityChartData = {
     labels: data
       .map(
-        (item) => `${convertMinutesAgo(new Date(item.timestamp).getTime())}m`
+        (item) =>
+          `${convertMinutesAgo(
+            new Date(item.timestamp || item.createdAt).getTime()
+          )}m`
       )
       .slice(0, 10),
     datasets: [
@@ -80,7 +84,10 @@ const TrendChart = ({ data = [] }) => {
   const tempChartData = {
     labels: data
       .map(
-        (item) => `${convertMinutesAgo(new Date(item.timestamp).getTime())}m`
+        (item) =>
+          `${convertMinutesAgo(
+            new Date(item.timestamp || item.createdAt).getTime()
+          )}m`
       )
       .slice(0, 10),
     datasets: [

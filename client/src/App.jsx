@@ -7,23 +7,25 @@ import axios from "axios"
 import socket from "./utils/socket"
 
 export default function App() {
-  const [data, setData] = useState([])
   const [device, setDevice] = useState("device_001")
   const [filteredData, setFilteredData] = useState([])
   const [readings, setReadings] = useState([])
+  const [data, setData] = useState([])
 
   console.log(readings)
+  console.log(data)
 
   useEffect(() => {
     axios
       .get("/api/data/" + device)
       .then((response) => {
         setReadings(response.data)
+        setData(response.data.slice(0, 10))
       })
       .catch((error) => {
         console.error("Error fetching data: ", error)
       })
-  }, [device, data])
+  }, [device])
 
   useEffect(() => {
     socket.on("connect", () => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import Table from "react-bootstrap/Table"
 import axios from "axios"
 import { convertMinutesAgo } from "../utils/convertMinutesAgo"
-import { calcTrend } from "../utils/CalcTrend"
+import { calcTrend } from "../utils/calcTrend"
 
 export default function Readings({ readings }) {
   const tempTrend = calcTrend(readings.slice(0, 10)).temperatureTrend
@@ -14,7 +14,6 @@ export default function Readings({ readings }) {
         maxHeight: "300px",
         overflowY: "auto",
         margin: "0 auto",
-        width: "50%",
       }}
     >
       <Table striped bordered hover size="sm">
@@ -33,7 +32,7 @@ export default function Readings({ readings }) {
             <tr key={reading.id}>
               <td>{`${convertMinutesAgo(reading.createdAt)} ${
                 convertMinutesAgo(reading.createdAt) === 1
-                  ? "minite ago"
+                  ? "minute ago"
                   : "minutes ago"
               }`}</td>
               <td>{reading.temperature}</td>
