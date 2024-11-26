@@ -34,6 +34,11 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("A client disconnected:", socket.id)
   })
+
+  socket.on("switch", (status = "off") => {
+    console.log("Switch status:", status)
+    startPublishData(status)
+  })
 })
 
 // Create Redis clients for publishing and subscribing
@@ -59,7 +64,17 @@ redisSubscriber.on("error", (err) =>
 redisPublisher.connect()
 redisSubscriber.connect()
 
-// Publish data to Redis every 10 seconds
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET, POST, PATCH, DELETE, PUT",
+    credentials: true,
+  })
+)
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+// Publish data to Redis every 60 seconds
 const publishData = (deviceId) => {
   const data = {
     deviceId,
@@ -71,10 +86,37 @@ const publishData = (deviceId) => {
   redisPublisher.publish("sensor-data", JSON.stringify(data))
   console.log("Published data:", data)
 }
-setInterval(() => publishData("device_001"), 60000)
-setInterval(() => publishData("device_002"), 60000)
-setInterval(() => publishData("device_003"), 60000)
 
+const intervals = {}
+
+function startPublishData(status = "off") {
+  if (status === "on") {
+    if (!intervals["device_001"]) {
+      intervals["device_001"] = setInterval(
+        () => publishData("device_001"),
+        60000
+      )
+    }
+    if (!intervals["device_002"]) {
+      intervals["device_002"] = setInterval(
+        () => publishData("device_002"),
+        60000
+      )
+    }
+    if (!intervals["device_003"]) {
+      intervals["device_003"] = setInterval(
+        () => publishData("device_003"),
+        60000
+      )
+    }
+  } else if (status === "off") {
+    for (const deviceId in intervals) {
+      clearInterval(intervals[deviceId])
+      delete intervals[deviceId]
+    }
+    console.log("Stopped publishing data.")
+  }
+}
 // Subscribe to Redis channel
 redisSubscriber.subscribe("sensor-data", async (message) => {
   try {
@@ -91,17 +133,6 @@ redisSubscriber.subscribe("sensor-data", async (message) => {
     console.error("Error processing message:", error)
   }
 })
-
-// Middleware and static files
-app.use(
-  cors({
-    origin: "*",
-    methods: "GET, POST, PATCH, DELETE, PUT",
-    credentials: true,
-  })
-)
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
 
 // Routes
 app.use("/api", dataRoutes)

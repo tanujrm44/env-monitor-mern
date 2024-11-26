@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import "bootstrap/dist/css/bootstrap.min.css"
-import { Container, Navbar, Nav, NavDropdown } from "react-bootstrap"
+import { Container, Navbar, Nav, NavDropdown, Form } from "react-bootstrap"
 import TrendChart from "./components/Charts"
 import Readings from "./components/Readings"
 import axios from "axios"
@@ -11,6 +11,7 @@ export default function App() {
   const [filteredData, setFilteredData] = useState([])
   const [readings, setReadings] = useState([])
   const [data, setData] = useState([])
+  const [switchState, setSwitchState] = useState(false)
 
   console.log(readings)
   console.log(data)
@@ -26,6 +27,10 @@ export default function App() {
         console.error("Error fetching data: ", error)
       })
   }, [device])
+
+  useEffect(() => {
+    socket.emit("switch", switchState ? "on" : "off")
+  }, [switchState])
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -73,7 +78,17 @@ export default function App() {
       </Navbar>
 
       <Container className="mt-4">
-        <h4 className="text-center mt-3">Device {device.slice(-1)}</h4>
+        <div className="d-flex align-items-center justify-content-center gap-3">
+          <h4 className="text-center mt-3">Device {device.slice(-1)}</h4>
+          <Form.Check
+            size={"lg"}
+            type="switch"
+            id="custom-switch"
+            checked={switchState}
+            onChange={(e) => setSwitchState(e.target.checked)}
+            label={switchState ? "Turn Off" : "Turn On"}
+          />
+        </div>
         <Readings readings={readings} />
         <TrendChart data={filteredData} />
       </Container>
