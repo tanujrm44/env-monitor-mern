@@ -28,8 +28,8 @@ export default function Readings({ readings }) {
           </tr>
         </thead>
         <tbody>
-          {readings?.map((reading) => (
-            <tr key={reading.id}>
+          {readings?.map((reading, i) => (
+            <tr key={i}>
               <td>{`${convertMinutesAgo(reading.createdAt)} ${
                 convertMinutesAgo(reading.createdAt) === 1
                   ? "minute ago"

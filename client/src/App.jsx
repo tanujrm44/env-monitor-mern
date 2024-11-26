@@ -8,30 +8,27 @@ import socket from "./utils/socket"
 
 export default function App() {
   const [device, setDevice] = useState("device_001")
-  const [filteredData, setFilteredData] = useState([])
   const [readings, setReadings] = useState([])
-  const [data, setData] = useState([])
   const [switchState, setSwitchState] = useState(false)
 
-  console.log(readings)
-  console.log(data)
-
+  // Fetch initial data for the selected device
   useEffect(() => {
     axios
       .get("/api/data/" + device)
       .then((response) => {
         setReadings(response.data)
-        setData(response.data.slice(0, 10))
       })
       .catch((error) => {
         console.error("Error fetching data: ", error)
       })
   }, [device])
 
+  // Emit switch state to the server
   useEffect(() => {
     socket.emit("switch", switchState ? "on" : "off")
   }, [switchState])
 
+  // Handle real-time data updates
   useEffect(() => {
     socket.on("connect", () => {
       console.log("Connected to WebSocket server")
@@ -39,7 +36,7 @@ export default function App() {
 
     socket.on("data-update", (newData) => {
       console.log("Real-time data received:", newData)
-      setData((prevData) => [newData, ...prevData].slice(0, 100)) // Keep last 100 readings
+      setReadings((prevReadings) => [newData, ...prevReadings].slice(0, 100)) // Keep only the latest 100 readings
     })
 
     return () => {
@@ -47,9 +44,8 @@ export default function App() {
     }
   }, [])
 
-  useEffect(() => {
-    setFilteredData(data.filter((item) => item.deviceId === device))
-  }, [data, device])
+  // Filter readings for the selected device
+  const filteredReadings = readings.filter((item) => item.deviceId === device)
 
   return (
     <>
@@ -89,8 +85,8 @@ export default function App() {
             label={switchState ? "Turn Off" : "Turn On"}
           />
         </div>
-        <Readings readings={readings} />
-        <TrendChart data={filteredData} />
+        <Readings readings={filteredReadings} />
+        <TrendChart data={filteredReadings} />
       </Container>
     </>
   )

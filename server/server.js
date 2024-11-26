@@ -9,6 +9,7 @@ import { Server } from "socket.io"
 import { createClient } from "redis"
 import dataRoutes from "./routes/dataRoutes.js"
 import DataModel from "./models/DataModel.js"
+import mongoose from "mongoose"
 
 dotenv.config()
 
@@ -22,7 +23,7 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Replace with your frontend URL
+    origin: "*",
     methods: ["GET", "POST"],
   },
 })
@@ -77,8 +78,9 @@ app.use(express.urlencoded({ extended: true }))
 // Publish data to Redis every 60 seconds
 const publishData = (deviceId) => {
   const data = {
+    _id: new mongoose.Types.ObjectId(),
     deviceId,
-    timestamp: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
     temperature: (Math.random() * 10 + 20).toFixed(2),
     humidity: (Math.random() * 30 + 50).toFixed(2),
   }
@@ -91,6 +93,9 @@ const intervals = {}
 
 function startPublishData(status = "off") {
   if (status === "on") {
+    publishData("device_001")
+    publishData("device_002")
+    publishData("device_003")
     if (!intervals["device_001"]) {
       intervals["device_001"] = setInterval(
         () => publishData("device_001"),
@@ -127,7 +132,7 @@ redisSubscriber.subscribe("sensor-data", async (message) => {
     io.emit("data-update", data)
 
     // Save to MongoDB
-    await DataModel.create(data)
+    // await DataModel.create(data)
     console.log("Data saved to MongoDB")
   } catch (error) {
     console.error("Error processing message:", error)
