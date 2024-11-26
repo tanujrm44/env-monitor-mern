@@ -132,7 +132,7 @@ redisSubscriber.subscribe("sensor-data", async (message) => {
     io.emit("data-update", data)
 
     // Save to MongoDB
-    // await DataModel.create(data)
+    await DataModel.create(data)
     console.log("Data saved to MongoDB")
   } catch (error) {
     console.error("Error processing message:", error)
